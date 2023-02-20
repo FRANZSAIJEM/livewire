@@ -1,0 +1,217 @@
+<template>
+  <div class="body">
+           
+
+    
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="deleteModalLabel">Edit Attendance</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form>
+                      <div class="mb-3">
+                        <label for="name" class="col-form-label">Name: </label>
+                        <input type="text" class="form-control" id="name"> 
+                      </div>
+
+
+                      <div class="mb-3">
+                        <label for="year" class="col-form-label">Year: </label>
+                        <select v-model="newYearInput" name="" id="year" class="form-select">
+                        <option value="BSIT - 1">BSIT - 1</option>
+                        <option value="BSIT - 2">BSIT - 2</option>
+                        <option value="BSIT - 3">BSIT - 3</option>
+                        <option value="BSIT - 4">BSIT - 4</option>
+                      </select>
+                      </div>
+
+                      <div class="mb-3">
+                      <label for="attendance" class="col-form-label">Attendance: </label>
+                      <select v-model="newAttendanceInput" name="" id="attendance" class="form-select" typeof="text">
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                        <option value="Late">Late</option>
+                      </select>
+                    </div>
+
+                    </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="updateTask()">Save changes</button>
+                  </div>
+                </div>
+              </div>
+            </div> 
+
+
+
+
+
+
+    <div class="content">
+      <h1 class="bg-secondary p-3 text-center text-white">Cast Attendance</h1>
+      <div class="input-group mb-5 shadow-lg">
+
+      <input v-model="newNameInput" type="text" name="" id="" class="form-control p-2" placeholder="Name">
+
+   
+      <select v-model="newYearInput" name="" id="" class="form-select">
+        <option value="BSIT - 1">BSIT - 1</option>
+        <option value="BSIT - 2">BSIT - 2</option>
+        <option value="BSIT - 3">BSIT - 3</option>
+        <option value="BSIT - 4">BSIT - 4</option>
+      </select>
+
+
+      <select v-model="newAttendanceInput" name="" id="" class="form-select" typeof="text">
+        <option value="Present">Present</option>
+        <option value="Absent">Absent</option>
+        <option value="Late">Late</option>
+      </select>
+
+      <button @click="addAttendance()" class="btn btn-success">&check; Add</button>
+    </div>
+ 
+    <div v-for="attendance in attendances" :key="attendance.attendances" class="text-center">
+      <div class="card-body">
+        <div class="row">
+          <table class="table table-bordered shadow-sm">
+            <thead>
+              <tr>
+                <th>
+                 Name
+                </th>
+                <th>
+                 Year
+                </th>
+                <th>
+                 Attendance
+                </th>
+                <th>
+                 Remove
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  {{ attendance.name }}
+                </td>
+                <td>
+                  {{ attendance.year }} 
+                </td>
+                <td>
+                  {{ attendance.attendance }} 
+                </td>
+                <td>
+                  <!-- <button data-id="{{ attendance.id }}" class="btn btn-success m-2 edit-button" data-bs-toggle="modal" data-bs-target="#exampleModal">&check; Edit</button> -->
+                  <RouterLink :to="{ name: 'edit', params: { id: attendance.id }}" class="text-secondary" id="edit"> 
+                      <button class="btn btn-success">Edit</button>
+                    </RouterLink> 
+                  <!-- <button @click="removeAttendance(attendance.id)" class="btn btn-danger m-2 ">&cross; Remove</button> -->
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+    </div>
+    </div>
+ 
+  </div>
+
+</template>
+<script setup>
+import {ref, onMounted} from 'vue'
+import {db} from '../firebase/index.js'
+import {addDoc, collection, onSnapshot,deleteDoc, doc, updateDoc} from "firebase/firestore";
+import { RouterLink, RouterView } from 'vue-router'
+
+
+
+onMounted(async()=>{
+  const q = (collection(db, "attendance"));
+
+  onSnapshot(q,(querySnapshot)=> {
+
+
+    const attendancesTmp = []
+
+
+  querySnapshot.forEach((doc) => {
+
+    const attendance = {
+      id: doc.id,
+      name: doc.data().name,
+      year: doc.data().year,
+      attendance: doc.data().attendance,
+      completed: doc.data().completed
+    }
+
+    attendancesTmp.push(attendance)
+  });
+  attendances.value = attendancesTmp
+  })
+})
+
+
+
+
+
+const newNameInput = ref('')
+const newYearInput = ref('BSIT - 1')
+const newAttendanceInput = ref('Present')
+
+const attendances = ref([])
+const id = ref(1)
+
+
+
+
+
+
+
+
+const addAttendance = async () => {
+  if (newNameInput.value != '' && newYearInput.value != '' && newAttendanceInput.value != ''){
+
+    await addDoc(collection(db,"attendance"),{
+      name:newNameInput.value,
+      year: newYearInput.value,
+      attendance: newAttendanceInput.value,
+      completed: false
+    })
+    newNameInput.value = ''  
+    newYearInput.value = 'BSIT - 1'  
+    newAttendanceInput.value = 'Present'
+  }
+}
+
+
+
+const removeAttendance = (id) => {
+  deleteDoc(doc(db,"attendance",id));
+}
+
+
+
+
+</script>
+
+<style>
+.content{
+  width: 1000px;
+}
+.body{
+  display: grid;
+  place-items: center;
+}
+.line-through{
+  text-decoration: line-through;
+}
+</style> 

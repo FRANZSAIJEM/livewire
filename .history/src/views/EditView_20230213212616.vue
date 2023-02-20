@@ -1,0 +1,99 @@
+<style>
+.container{
+    justify-content: center;
+    display: grid;
+}
+.cont
+</style>
+<template>
+    <div class="container">
+        <div class="content">
+            <div class="card">
+                <div class="card-header">
+                    <h1>Edit Attendance</h1>
+                </div>
+
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                        <label for="name" class="col-form-label">Name: </label>
+                        <input v-model="newNameInput" type="text" name="" id="" class="form-control p-2" placeholder="Name">
+                        </div>
+
+
+                        <div class="mb-3">
+                        <label for="year" class="col-form-label">Year: </label>
+                        <select v-model="newYearInput" name="" id="year" class="form-select">
+                        <option value="BSIT - 1">BSIT - 1</option>
+                        <option value="BSIT - 2">BSIT - 2</option>
+                        <option value="BSIT - 3">BSIT - 3</option>
+                        <option value="BSIT - 4">BSIT - 4</option>
+                        </select>
+                        </div>
+
+                        <div class="mb-3">
+                        <label for="attendance" class="col-form-label">Attendance: </label>
+                        <select v-model="newAttendanceInput" name="" id="attendance" class="form-select" typeof="text">
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                        <option value="Late">Late</option>
+                        </select>
+                    </div>
+                  
+                    </form> 
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-primary" @click="updateTask()">Save changes</button>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+</template>
+
+
+
+
+<script setup>
+
+import { ref, onMounted, watch } from 'vue'
+import { db } from '../firebase/index.js'
+import { doc, getDoc, updateDoc, deleteDoc  } from 'firebase/firestore'
+import { RouterLink, RouterView } from 'vue-router'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const getAttendanceID = defineProps(['id'])
+
+onMounted(async()=>{
+    const attendanceID = getAttendanceID.id
+
+    const docRef = doc(db, "attendance", attendanceID)
+    const docSnap = await getDoc(docRef)
+
+    newNameInput.value = docSnap.data().name
+    newYearInput.value = docSnap.data().year
+    newAttendanceInput.value = docSnap.data().attendance
+
+})
+
+const newNameInput = ref('')
+const newYearInput = ref('')
+const newAttendanceInput = ref('')
+const attendanceID = getAttendanceID.id
+
+
+
+const updateTask = () => {
+    updateDoc(doc(db, 'attendance', attendanceID), {
+        name: newNameInput.value,
+        year: newYearInput.value,
+        attendance: newAttendanceInput.value,
+    
+    })
+
+    router.push('/')
+}
+
+</script>
